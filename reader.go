@@ -1,10 +1,15 @@
 package binary
 
 import (
+	"bufio"
 	"io"
 )
 
 var zero [MaxVarintLen64]byte
+
+type DelimReader interface {
+	ReadBytes(delim byte) (line []byte, err error)
+}
 
 type Reader struct {
 	R   io.Reader
@@ -30,6 +35,25 @@ func (reader *Reader) Read(b []byte) (n int, err error) {
 		n, err = reader.R.Read(b)
 		reader.err = err
 	}
+	return
+}
+
+func (reader *Reader) Delimit(delim byte) (b []byte) {
+	if reader.err != nil {
+		return nil
+	}
+	if _, ok := reader.R.(DelimReader); !ok {
+		reader.R = bufio.NewReader(reader.R)
+	}
+	b, reader.err = reader.R.(DelimReader).ReadBytes(delim)
+	return
+}
+
+func (reader *Reader) ReadPacket(spliter Spliter) (b []byte) {
+	if reader.err != nil {
+		return nil
+	}
+	b = spliter.Read(reader)
 	return
 }
 

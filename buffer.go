@@ -10,6 +10,12 @@ type Buffer struct {
 	WritePos int
 }
 
+func (b *Buffer) Reset(data []byte) {
+	b.Data = data
+	b.ReadPos = 0
+	b.WritePos = 0
+}
+
 func (buf *Buffer) Error() error {
 	return nil
 }

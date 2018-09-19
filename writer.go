@@ -1,6 +1,7 @@
 package binary
 
 import (
+	"bufio"
 	"io"
 )
 
@@ -25,6 +26,22 @@ func (writer *Writer) Error() error {
 
 func (writer *Writer) Write(b []byte) (n int, err error) {
 	n, err = writer.W.Write(b)
+	writer.err = err
+	return
+}
+
+func (writer *Writer) WritePacket(b []byte, spliter Spliter) {
+	if writer.err != nil {
+		return
+	}
+	spliter.Write(writer, b)
+}
+
+func (writer *Writer) WriteByte(b byte) (err error) {
+	if _, ok := writer.W.(io.ByteWriter); !ok {
+		writer.W = bufio.NewWriter(writer.W)
+	}
+	err = writer.W.(io.ByteWriter).WriteByte(b)
 	writer.err = err
 	return
 }
